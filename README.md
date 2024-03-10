@@ -8,14 +8,20 @@
 ## Downloading
 
 ```
-git clone {repository URL}
+git clone https://github.com/MargaritaRoda/nodejs2024Q1-service
 ```
-
+```
+git checkout rest-service
+```
+```
+ensure you use Node -v 20
+```
 ## Installing NPM modules
 
 ```
 npm install
 ```
+create .env file from .env.example
 
 ## Running application
 

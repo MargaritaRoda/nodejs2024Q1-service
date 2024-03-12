@@ -1,0 +1,33 @@
+version: '3.5'
+
+services:
+
+  db:
+    container_name: db
+    image: db:latest
+    build:
+      dockerfile: db.Dockerfile
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
+      PGDATA: /data
+    volumes:
+      - db:/data
+    ports:
+      - "5432:5432"
+
+  app:
+    container_name: app
+    image: app:latest
+    build:
+      dockerfile: app.Dockerfile
+    volumes:
+      - ./src:/app/src
+    ports:
+      - "4000:4000"
+    depends_on:
+      - db
+
+volumes:
+  db:

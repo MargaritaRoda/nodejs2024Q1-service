@@ -16,18 +16,33 @@ services:
       - db:/data
     ports:
       - "5432:5432"
+    restart: always  # Restart the container automatically if it exits
 
   app:
     container_name: app
     image: app:latest
     build:
       dockerfile: app.Dockerfile
+    environment:
+      DATABASE_URL: postgresql://app:app@db:5432/app
     volumes:
       - ./src:/app/src
+      - ./prisma:/app/prisma
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./tsconfig.build.json:/app/tsconfig.build.json
+      - ./package.json:/app/package.json
     ports:
       - "4000:4000"
     depends_on:
       - db
+    restart: always  # Restart the container automatically if it exits
+    #env_file:
+    #  - .env
 
 volumes:
   db:
+
+# volumes:
+#  db_data:  # Define a volume for database data
+#  app_logs:  # Define a volume for application logs
+

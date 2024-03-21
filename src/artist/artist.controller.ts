@@ -33,10 +33,15 @@ export class ArtistController {
     status: HttpStatus.CREATED,
     description: 'Successful operation',
   })
-  create(@Body() createArtistDto: CreateArtistDto) {
+  async create(@Body() createArtistDto: CreateArtistDto) {
     try {
-      const artist = this.artistService.create(createArtistDto);
-      return artist; //This action adds a new user
+      const artist = await this.artistService.create(createArtistDto);
+      return {
+        id: artist.id,
+        name: artist.name,
+        grammy: artist.grammy,
+        favsId: null,
+      };
     } catch (err) {
       if (err instanceof UserExistsError) {
         throw new BadRequestException({
@@ -65,8 +70,8 @@ export class ArtistController {
     description: 'Get single artist by id',
   })
   @ApiResponse({ status: HttpStatus.OK, description: 'Successful operation' })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const artist = this.artistService.findOne(id);
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    const artist = await this.artistService.findOne(id);
     if (!artist) {
       throw new NotFoundException({
         statusCode: HttpStatus.NOT_FOUND,
@@ -86,11 +91,11 @@ export class ArtistController {
     status: HttpStatus.OK,
     description: 'The artist has been updated',
   })
-  update(
+  async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateArtistDto: UpdateArtistDto,
   ) {
-    return this.artistService.update(id, updateArtistDto);
+    return await this.artistService.update(id, updateArtistDto);
   }
 
   @Delete(':id')
@@ -103,14 +108,7 @@ export class ArtistController {
     description: 'Deleted successfully',
   })
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id', ParseUUIDPipe) id: string): void {
-    const artist = this.artistService.remove(id);
-    if (!artist) {
-      throw new NotFoundException({
-        statusCode: HttpStatus.NOT_FOUND,
-        message: ['Artist is not found by id'],
-        error: 'Not found',
-      });
-    }
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    return await this.artistService.remove(id);
   }
 }

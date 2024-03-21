@@ -32,9 +32,8 @@ export class TrackController {
     status: HttpStatus.CREATED,
     description: 'Successful operation',
   })
-  create(@Body() createTrackDto: CreateTrackDto) {
-    const track = this.trackService.create(createTrackDto);
-    return track;
+  async create(@Body() createTrackDto: CreateTrackDto) {
+    return await this.trackService.create(createTrackDto);
   }
 
   @Get()
@@ -43,7 +42,7 @@ export class TrackController {
     description: 'Gets all library tracks list',
   })
   @ApiResponse({ status: HttpStatus.OK, description: 'Successful operation' })
-  findAll(): Track[] {
+  async findAll() {
     return this.trackService.findAll();
   }
 
@@ -74,7 +73,7 @@ export class TrackController {
     status: HttpStatus.OK,
     description: 'The track has been updated',
   })
-  update(
+  async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateTrackDto: UpdateTrackDto,
   ) {
@@ -92,13 +91,13 @@ export class TrackController {
   })
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', ParseUUIDPipe) id: string) {
-    const track = await this.trackService.remove(id);
-    if (!track) {
-      throw new NotFoundException({
-        statusCode: HttpStatus.NOT_FOUND,
-        message: ['Track is not found by id'],
-        error: 'Not found',
-      });
-    }
+    return await this.trackService.remove(id);
+    // if (!track) {
+    //   throw new NotFoundException({
+    //     statusCode: HttpStatus.NOT_FOUND,
+    //     message: ['Track is not found by id'],
+    //     error: 'Not found',
+    //   });
+    // }
   }
 }

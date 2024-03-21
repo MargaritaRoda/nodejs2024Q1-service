@@ -31,9 +31,8 @@ export class AlbumController {
     status: HttpStatus.CREATED,
     description: 'Album is created',
   })
-  create(@Body() createAlbumDto: CreateAlbumDto): Album {
-    const album = this.albumService.create(createAlbumDto);
-    return album;
+  async create(@Body() createAlbumDto: CreateAlbumDto) {
+    return await this.albumService.create(createAlbumDto);
   }
 
   @Get()
@@ -42,8 +41,8 @@ export class AlbumController {
     description: 'Gets all library albums list',
   })
   @ApiResponse({ status: HttpStatus.OK, description: 'Successful operation' })
-  findAll() {
-    return this.albumService.findAll();
+  async findAll() {
+    return await this.albumService.findAll();
   }
 
   @Get(':id')
@@ -73,11 +72,11 @@ export class AlbumController {
     status: HttpStatus.OK,
     description: 'The album has been updated',
   })
-  update(
+  async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateAlbumDto: UpdateAlbumDto,
   ) {
-    return this.albumService.update(id, updateAlbumDto);
+    return await this.albumService.update(id, updateAlbumDto);
   }
 
   @Delete(':id')
@@ -90,14 +89,17 @@ export class AlbumController {
     description: 'Deleted successfully',
   })
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id', ParseUUIDPipe) id: string): void {
-    const album = this.albumService.remove(id);
-    if (!album) {
-      throw new NotFoundException({
-        statusCode: HttpStatus.NOT_FOUND,
-        message: ['Artist is not found by id'],
-        error: 'Not found',
-      });
-    }
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    return await this.albumService.remove(id);
   }
+  // remove(@Param('id', ParseUUIDPipe) id: string): void {
+  //   const album = this.albumService.remove(id);
+  //   if (!album) {
+  //     throw new NotFoundException({
+  //       statusCode: HttpStatus.NOT_FOUND,
+  //       message: ['Artist is not found by id'],
+  //       error: 'Not found',
+  //     });
+  //   }
+  // }
 }

@@ -3,9 +3,8 @@ import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 import { Artist } from './entities/artist.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { tracks } from '../track/track.service';
-import { albums } from '../album/album.service';
-import { favorites } from '../favs/favs.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 export const artists: Artist[] = [
   {
@@ -26,58 +25,94 @@ export const artists: Artist[] = [
 ];
 @Injectable()
 export class ArtistService {
-  create(createArtistDto: CreateArtistDto) {
-    const newArtist = {
-      name: createArtistDto.name,
-      grammy: createArtistDto.grammy,
-      id: uuidv4(),
-    };
-    artists.push(newArtist);
-    return newArtist; //'This action adds a new artist';
+  constructor(private prisma: PrismaService) {}
+  async create(createArtistDto: CreateArtistDto) {
+    return this.prisma.artist.create({
+      data: {
+        id: uuidv4(),
+        name: createArtistDto.name,
+        grammy: createArtistDto.grammy,
+      },
+    });
   }
 
   async findAll(): Promise<Artist[]> {
-    return artists; //`This action returns all artist`;
+    return this.prisma.artist.findMany();
   }
 
-  findOne(id: string): Artist | null {
-    return (
-      artists.find((item) => {
-        return item.id === id;
-      }) || null
-    );
+  async findOne(id: string): Promise<Artist> {
+    return this.prisma.artist.findUnique({ where: { id } });
   }
 
-  update(id: string, updateArtistDto: UpdateArtistDto): Artist {
-    const artist = artists.find((item) => {
-      return item.id === id;
-    });
+  async update(id: string, updateArtistDto: UpdateArtistDto) {
+    const artist = await this.prisma.artist.findUnique({ where: { id } });
     if (!artist) {
       throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
     }
-    artist.name = updateArtistDto.name;
-    artist.grammy = updateArtistDto.grammy;
-    return artist;
+    return this.prisma.artist.update({
+      where: { id: artist.id },
+      data: {
+        id: artist.id,
+        name: updateArtistDto.name,
+        grammy: updateArtistDto.grammy,
+        favsId: artist.favsId,
+      },
+    });
+  }
+  async remove(id: string) {
+    //массив альбомов этого артиста
+    const albumsArtistId = await this.prisma.album.findMany({
+      where: { artistId: id },
+    });
+    for (const album of albumsArtistId) {
+      await this.prisma.album.update({
+        where: { id: album.id },
+        data: {
+          id: album.id,
+          name: album.name,
+          year: album.year,
+          artistId: null,
+          favsId: album.favsId,
+        },
+      });
+    }
+
+    try {
+      const deletedArtist = await this.prisma.artist.delete({
+        where: {
+          id,
+        },
+      });
+      //deletedArtist.favsId = null;
+      return deletedArtist;
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
+      } else console.error(error);
+    }
   }
 
-  remove(id: string): boolean {
-    const index = artists.findIndex((item) => {
-      return item.id === id;
-    });
-    if (index === -1) {
-      return false;
-    }
-    for (const album of albums.filter((a) => a.artistId === id)) {
-      album.artistId = null;
-    }
-    for (const track of tracks.filter((t) => t.artistId === id)) {
-      track.artistId = null;
-    }
-    const favArtistIndex = favorites.artists.findIndex((a) => a === id);
-    if (favArtistIndex !== -1) {
-      favorites.artists.splice(favArtistIndex, 1);
-    }
-    artists.splice(index, 1);
-    return true;
-  }
+  // remove(id: string): boolean {
+  //   const index = artists.findIndex((item) => {
+  //     return item.id === id;
+  //   });
+  //   if (index === -1) {
+  //     return false;
+  //   }
+  //   for (const album of albums.filter((a) => a.artistId === id)) {
+  //     album.artistId = null;
+  //   }
+  //   for (const track of tracks.filter((t) => t.artistId === id)) {
+  //     track.artistId = null;
+  //   }
+  //   const favArtistIndex = favorites.artists.findIndex((a) => a === id);
+  //   if (favArtistIndex !== -1) {
+  //     favorites.artists.splice(favArtistIndex, 1);
+  //   }
+  //   artists.splice(index, 1);
+  //   return true;
+  // }
 }

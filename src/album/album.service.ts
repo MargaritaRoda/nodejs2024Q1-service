@@ -3,8 +3,8 @@ import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { Album } from './entities/album.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { tracks } from '../track/track.service';
-import { favorites } from '../favs/favs.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 export const albums: Album[] = [
   {
@@ -28,58 +28,76 @@ export const albums: Album[] = [
 ];
 @Injectable()
 export class AlbumService {
-  create(createAlbumDto: CreateAlbumDto) {
-    const newAlbum = {
-      name: createAlbumDto.name,
-      year: createAlbumDto.year,
-      artistId: createAlbumDto.artistId, // refers to Artist
-      id: uuidv4(), // uuid v4
-    };
-    albums.push(newAlbum);
-    return newAlbum; // 'This action adds a new album';
+  constructor(private prisma: PrismaService) {}
+  async create(createAlbumDto: CreateAlbumDto) {
+    return this.prisma.album.create({
+      data: {
+        id: uuidv4(), // uuid v4
+        name: createAlbumDto.name,
+        year: createAlbumDto.year,
+        artistId: createAlbumDto.artistId,
+      },
+    }); // 'This action adds a new album';
   }
 
-  findAll(): Album[] {
-    return albums; // `This action returns all album`;
+  async findAll(): Promise<Album[]> {
+    return this.prisma.album.findMany();
   }
 
   async findOne(id: string): Promise<Album> | null {
-    return (
-      albums.find((item) => {
-        return item.id === id;
-      }) || null
-    ); //`This action returns a #${id} album`;
+    return this.prisma.album.findUnique({ where: { id } });
   }
 
-  update(id: string, updateAlbumDto: UpdateAlbumDto) {
-    const album = albums.find((item) => {
-      return item.id === id;
-    });
+  async update(id: string, updateAlbumDto: UpdateAlbumDto) {
+    const album = await this.prisma.album.findUnique({ where: { id } });
 
     if (!album) {
       throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
     }
-    album.name = updateAlbumDto.name;
-    album.year = updateAlbumDto.year;
-    album.artistId = updateAlbumDto.artistId;
-    return album; //`This action updates a #${id} album`;
+    return this.prisma.album.update({
+      where: { id: album.id },
+      data: {
+        name: updateAlbumDto.name,
+        year: updateAlbumDto.year,
+        artistId: updateAlbumDto.artistId,
+      },
+    });
   }
 
-  remove(id: string): boolean {
-    const index = albums.findIndex((item) => {
-      return item.id === id;
-    });
-    if (index === -1) {
-      return false;
+  async remove(id: string) {
+    try {
+      const deletedAlbum = await this.prisma.album.delete({
+        where: {
+          id,
+        },
+      });
+      //deletedAlbum.favsId = null;
+      return deletedAlbum;
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
+      } else console.error(error);
     }
-    for (const track of tracks.filter((t) => t.albumId === id)) {
-      track.albumId = null;
-    }
-    const favAlbumIndex = favorites.albums.findIndex((a) => a === id);
-    if (favAlbumIndex !== -1) {
-      favorites.artists.splice(favAlbumIndex, 1);
-    }
-    albums.splice(index, 1);
-    return true; // `This action removes a #${id} album`;
   }
+
+  // remove(id: string): boolean {
+  //   const index = albums.findIndex((item) => {
+  //     return item.id === id;
+  //   });
+  //   if (index === -1) {
+  //     return false;
+  //   }
+  //   for (const track of tracks.filter((t) => t.albumId === id)) {
+  //     track.albumId = null;
+  //   }
+  //   const favAlbumIndex = favorites.albums.findIndex((a) => a === id);
+  //   if (favAlbumIndex !== -1) {
+  //     favorites.artists.splice(favAlbumIndex, 1);
+  //   }
+  //   albums.splice(index, 1);
+  //   return true; // `This action removes a #${id} album`;
+  // }
 }

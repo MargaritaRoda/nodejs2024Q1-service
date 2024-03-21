@@ -24,8 +24,8 @@ export class FavsController {
     description: 'Gets all favorites artists, tracks and albums',
   })
   @ApiResponse({ status: HttpStatus.OK, description: 'Successful operation' })
-  findAll() {
-    return this.favsService.findAll();
+  async findAll() {
+    return await this.favsService.findAll();
   }
 
   @Post(':entityType/:id')
@@ -37,17 +37,17 @@ export class FavsController {
     status: HttpStatus.CREATED,
     description: 'Successful operation',
   })
-  createEntity(
+  async createEntity(
     @Param('entityType') entityType: string,
     @Param('id', ParseUUIDPipe) id: string,
-  ): Artist | Track | string {
+  ): Promise<Artist | Track | string> {
     switch (entityType) {
       case 'artist':
-        return this.favsService.createArtist(id);
+        return await this.favsService.createArtist(id);
       case 'track':
-        return this.favsService.createTrack(id);
+        return await this.favsService.createTrack(id);
       case 'album':
-        return this.favsService.createAlbum(id);
+        return await this.favsService.createAlbum(id);
     }
   }
 
@@ -61,15 +61,15 @@ export class FavsController {
     description: 'Successful operation',
   })
   @HttpCode(HttpStatus.NO_CONTENT)
-  removeEntity(
+  async removeEntity(
     @Param('entityType') entityType: string,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     switch (entityType) {
       case 'artist':
-        return this.favsService.removeArtist(id);
+        return await this.favsService.removeArtist(id);
       case 'track':
-        return this.favsService.removeTrack(id);
+        return await this.favsService.removeTrack(id);
       case 'album':
         return this.favsService.removeAlbum(id);
       default:

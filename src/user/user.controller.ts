@@ -28,8 +28,8 @@ export class UserController {
     status: HttpStatus.CREATED,
     description: 'The user has been created',
   })
-  create(@Body() createUserDto: CreateUserDto) {
-    const user = this.userService.create(createUserDto);
+  async create(@Body() createUserDto: CreateUserDto) {
+    const user = await this.userService.create(createUserDto);
     return {
       login: user.login,
       version: user.version,
@@ -42,8 +42,8 @@ export class UserController {
   @Get()
   @ApiOperation({ summary: 'Get all users', description: 'Gets all users' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Successful operation' })
-  findAll(): User[] {
-    return this.userService.findAll();
+  async findAll(): Promise<User[]> {
+    return await this.userService.findAll();
   }
 
   @Get(':id')
@@ -52,8 +52,9 @@ export class UserController {
     description: 'Get single user by id',
   })
   @ApiResponse({ status: HttpStatus.OK, description: 'Successful operation' })
-  findOne(@Param('id', new ParseUUIDPipe()) id: string): User {
-    return <User>this.userService.findOne(id);
+  @HttpCode(HttpStatus.OK)
+  async findOne(@Param('id', new ParseUUIDPipe()) id: string): Promise<User> {
+    return await this.userService.findOne(id);
   }
 
   @Put(':id')
@@ -65,11 +66,11 @@ export class UserController {
     status: HttpStatus.OK,
     description: 'The user has been updated',
   })
-  update(
+  async update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateUserDto: UpdateUserDto,
-  ): Omit<User, 'password'> {
-    const user: User = this.userService.update(id, updateUserDto);
+  ): Promise<Omit<User, 'password'>> {
+    const user: User = await this.userService.update(id, updateUserDto);
     const response: Omit<User, 'password'> = {
       id: user.id,
       login: user.login,
@@ -91,13 +92,13 @@ export class UserController {
   })
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', ParseUUIDPipe) id: string) {
-    const user = await this.userService.remove(id);
-    if (!user) {
-      throw new NotFoundException({
-        statusCode: HttpStatus.NOT_FOUND,
-        message: ['User is not found by id'],
-        error: 'Not found',
-      });
-    }
+    return await this.userService.remove(id);
+    // if (user) {
+    //   throw new NotFoundException({
+    //     statusCode: HttpStatus.NOT_FOUND,
+    //     message: ['User is not found by id'],
+    //     error: 'Not found',
+    //   });
+    // }
   }
 }

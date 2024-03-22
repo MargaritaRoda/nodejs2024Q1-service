@@ -14,7 +14,6 @@ import {
 import { AlbumService } from './album.service';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
-import { Album } from './entities/album.entity';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Album')
@@ -92,14 +91,4 @@ export class AlbumController {
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     return await this.albumService.remove(id);
   }
-  // remove(@Param('id', ParseUUIDPipe) id: string): void {
-  //   const album = this.albumService.remove(id);
-  //   if (!album) {
-  //     throw new NotFoundException({
-  //       statusCode: HttpStatus.NOT_FOUND,
-  //       message: ['Artist is not found by id'],
-  //       error: 'Not found',
-  //     });
-  //   }
-  // }
 }

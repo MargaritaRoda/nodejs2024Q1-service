@@ -8,14 +8,16 @@ services:
     build:
       dockerfile: db.Dockerfile
     environment:
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: app
-      POSTGRES_DB: app
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
       PGDATA: /data
     volumes:
-      - db:/data
+      - db_data:/data
     ports:
       - "5432:5432"
+    env_file:
+      - .env
     restart: always  # Restart the container automatically if it exits
 
   app:
@@ -24,7 +26,8 @@ services:
     build:
       dockerfile: app.Dockerfile
     environment:
-      DATABASE_URL: postgresql://app:app@db:5432/app
+#      DATABASE_URL: ${DATABASE_URL_FOR_APP} # postgresql://app:app@db:5432/app
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB} # postgresql://app:app@db:5432/app
     volumes:
       - ./src:/app/src
       - ./prisma:/app/prisma
@@ -36,13 +39,12 @@ services:
     depends_on:
       - db
     restart: always  # Restart the container automatically if it exits
-    #env_file:
-    #  - .env
+    env_file:
+      - .env
 
+#volumes:
+#  db:
 volumes:
-  db:
-
-# volumes:
-#  db_data:  # Define a volume for database data
-#  app_logs:  # Define a volume for application logs
+  db_data:  # Define a volume for database data
+  app_logs:  # Define a volume for application logs
 

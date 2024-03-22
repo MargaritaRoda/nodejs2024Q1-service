@@ -139,17 +139,7 @@ export class FavsService {
         Album: true, // Include the updated list of tracks in the response
       },
     });
-    //
-    // const result = {
-    //   albums: updatedFavorites.Album.map((a) => ({
-    //     id: a.id,
-    //     name: a.name,
-    //     year: a.year,
-    //     artistId: a.artistId,
-    //   })),
-    // };
-    // const favsAlbum = result.albums.find((a) => a.id === id);
-    // return favsAlbum.id;
+
     return album.id;
   }
 
@@ -162,7 +152,6 @@ export class FavsService {
         Track: true,
       },
     });
-    console.log(favs);
     const result = {
       artists: favs.Artist.map((a) => ({
         id: a.id,
@@ -183,23 +172,8 @@ export class FavsService {
         duration: t.duration,
       })),
     };
-    console.log(result);
-    return result;
 
-    // const favoritesResponse = new FavoritesResponse(
-    //   favorites,
-    //   artists,
-    //   albums,
-    //   tracks,
-    // ); // Pass all arrays and Favorites instance
-    // const favoriteArtists = favoritesResponse.getArtists();
-    // const favoriteAlbums = favoritesResponse.getAlbums();
-    // const favoriteTracks = favoritesResponse.getTracks();
-    // return {
-    //   artists: favoriteArtists,
-    //   albums: favoriteAlbums,
-    //   tracks: favoriteTracks,
-    // }; //`This action returns all favs`;
+    return result;
   }
 
   async removeArtist(id: string) {
@@ -240,13 +214,7 @@ export class FavsService {
       grammy: artist.grammy,
     };
   }
-  //   const index = favorites.artists.findIndex((a) => a === id);
-  //   if (index === -1) {
-  //     throw new HttpException('Artists doesnt exist', HttpStatus.NOT_FOUND);
-  //   }
-  //   favorites.artists.splice(index, 1);
-  //   return true; // `This action removes a #${id} fav`;
-  // }
+
   async removeTrack(id: string) {
     const track = await this.prisma.track.findUnique({ where: { id } });
 
@@ -286,12 +254,6 @@ export class FavsService {
       albumId: track.albumId,
       duration: track.duration,
     };
-    // const index = favorites.tracks.findIndex((t) => t === id);
-    // if (index === -1) {
-    //   throw new HttpException('Track doesnt exist', HttpStatus.NOT_FOUND);
-    // }
-    // favorites.tracks.splice(index, 1);
-    // return true; // `This action removes a #${id} fav`;
   }
   async removeAlbum(id: string) {
     const album = await this.prisma.album.findUnique({ where: { id } });
@@ -331,11 +293,5 @@ export class FavsService {
       artistId: album.artistId,
       year: album.year,
     };
-    // const index = favorites.albums.findIndex((a) => a === id);
-    // if (index === -1) {
-    //   throw new HttpException('Track doesnt exist', HttpStatus.NOT_FOUND);
-    // }
-    // favorites.albums.splice(index, 1);
-    // return true; // `This action removes a #${id} fav`;
   }
 }

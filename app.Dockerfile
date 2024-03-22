@@ -2,12 +2,10 @@
 FROM node:20.11.1-alpine3.19
 
 WORKDIR /app
-COPY ./package.json ./package.json
-COPY ./package-lock.json ./package-lock.json
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm install && \
+    npm cache clean --force
 
-# Run vulnerability scanning
-#RUN npm audit --audit-level=high  и добавь в package.json "vulnerability-scan": "npm audit"
 
 COPY . .
 

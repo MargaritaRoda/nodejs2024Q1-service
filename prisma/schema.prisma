@@ -18,9 +18,9 @@ model User {
   id        String   @id @default(uuid())
   login     String   @unique()
   password  String
-  version   Int      @default(autoincrement()) // integer number, increments on update
+  version   Int      @default(1) // integer number, increments on update
   createdAt DateTime @default(now()) // timestamp of creation УТОЧНИ правильность
-  updatedAt DateTime @updatedAt // timestamp of last update
+  updatedAt DateTime @default(now()) // timestamp of last update
 }
 
 model Artist {

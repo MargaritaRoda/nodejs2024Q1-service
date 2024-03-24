@@ -28,16 +28,11 @@ export class OldPasswordNotExistError extends Error {
 export class UserService {
   constructor(private prisma: PrismaService) {}
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const date = new Date();
-    const dateForResponse = date.getTime();
     const user = await this.prisma.user.create({
       data: {
         id: uuidv4(),
         login: createUserDto.login,
         password: createUserDto.password,
-        version: 1, // integer number, increments on update
-        createdAt: date, // timestamp of creation
-        updatedAt: date, // timestamp of last update
       },
     });
 
@@ -46,8 +41,8 @@ export class UserService {
       login: user.login,
       password: user.password,
       version: user.version, // integer number, increments on update
-      createdAt: dateForResponse, // timestamp of creation
-      updatedAt: dateForResponse, // timestamp of last update
+      createdAt: user.createdAt.getTime(), // timestamp of creation
+      updatedAt: user.updatedAt.getTime(), // timestamp of last update
     };
   }
 
@@ -84,9 +79,6 @@ export class UserService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    const date = new Date();
-    const dateForResponse = date.getTime();
-
     const user = await this.prisma.user.findUnique({
       where: {
         id,
@@ -106,7 +98,7 @@ export class UserService {
         login: updateUserDto.login,
         password: updateUserDto.newPassword,
         version: user.version + 1, // integer number, increments on update
-        updatedAt: date, // timestamp of last update
+        updatedAt: new Date(), // timestamp of last update
       },
     });
     return {
@@ -114,8 +106,8 @@ export class UserService {
       login: updatedUser.login,
       password: updatedUser.password,
       version: updatedUser.version,
-      createdAt: user.createdAt.getTime(),
-      updatedAt: dateForResponse,
+      createdAt: updatedUser.createdAt.getTime(),
+      updatedAt: updatedUser.updatedAt.getTime(),
     };
   }
   async remove(id: string) {

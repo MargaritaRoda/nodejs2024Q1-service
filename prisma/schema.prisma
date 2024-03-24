@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  // previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  login     String   @unique()
+  password  String
+  version   Int      @default(1) // integer number, increments on update
+  createdAt DateTime @default(now()) // timestamp of creation УТОЧНИ правильность
+  updatedAt DateTime @default(now()) // timestamp of last update
+}
+
+model Artist {
+  id     String     @id @default(uuid())
+  name   String
+  grammy Boolean
+  albums Album[]
+  Track  Track[]
+  favs   Favorites? @relation(fields: [favsId], references: [id])
+  favsId String?
+}
+
+model Album {
+  id       String     @id @default(uuid())
+  name     String
+  year     Int
+  artist   Artist?    @relation(fields: [artistId], references: [id], onDelete: SetNull) // add onDelete: setNull
+  artistId String?
+  tracks   Track[]
+  favs     Favorites? @relation(fields: [favsId], references: [id])
+  favsId   String?
+}
+
+model Track {
+  id       String     @id @default(uuid())
+  name     String
+  artist   Artist?    @relation(fields: [artistId], references: [id], onDelete: SetNull) // add onDelete: setNull
+  artistId String?
+  album    Album?     @relation(fields: [albumId], references: [id], onDelete: SetNull) // add onDelete: setNull
+  albumId  String?
+  duration Int
+  favs     Favorites? @relation(fields: [favsId], references: [id])
+  favsId   String?
+}
+
+model Favorites {
+  id     String   @id @default(uuid())
+  Track  Track[]
+  Album  Album[]
+  Artist Artist[]
+}
+
+// artists String[] // Array of artist IDs
+// albums  String[] // Array of album IDs
+// tracks  String[] // Array of track IDs

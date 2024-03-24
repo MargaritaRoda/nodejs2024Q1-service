@@ -8,19 +8,25 @@
 ## Downloading
 
 ```
-git clone {repository URL}
+git clone https://github.com/MargaritaRoda/nodejs2024Q1-service
 ```
-
+```
+git checkout next
+```
+```
+ensure you use Node -v 20
+```
 ## Installing NPM modules
 
 ```
 npm install
 ```
+create .env file from .env.example
 
 ## Running application
-
+# open Docker desktop
 ```
-npm start
+docker compose up
 ```
 
 After starting the app on port (4000 as default) you can open
